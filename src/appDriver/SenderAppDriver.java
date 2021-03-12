@@ -2,6 +2,8 @@ package appDriver;
 
 import sender.Sender;
 
+import java.util.Scanner;
+
 public class SenderAppDriver { // The Sender. Client.
     public static void main(String[] args) throws Exception {
         if(args.length < 1 && args.length > 5) {
@@ -10,8 +12,18 @@ public class SenderAppDriver { // The Sender. Client.
         if(args[0].equalsIgnoreCase("-f")) {
             new Sender(args[1], args[2], Integer.parseInt(args[3]));
         }else {
-            new Sender(args[0], args[1], Integer.parseInt(args[2]));
+            new Sender(endOfFileReader(), args[0], Integer.parseInt(args[1]));
         }
+
+    }
+
+    private static String endOfFileReader() {
+        String msg = "";
+        Scanner input = new Scanner(System.in);
+        while(input.hasNext()) {
+            msg += input.nextLine();
+        }
+        return msg;
 
     }
 }
