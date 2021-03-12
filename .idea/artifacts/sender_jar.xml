@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sender:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sender_jar</output-path>
+    <root id="archive" name="Sender.jar">
+      <element id="module-output" name="Checkpoints_UDP" />
+    </root>
+  </artifact>
+</component>

@@ -19,9 +19,10 @@ public class SenderAppDriver { // The Sender. Client.
 
     private static String endOfFileReader() {
         String msg = "";
+        String newLine = "\n";
         Scanner input = new Scanner(System.in);
         while(input.hasNext()) {
-            msg += input.nextLine();
+            msg += input.nextLine() + newLine;
         }
         return msg;
 
