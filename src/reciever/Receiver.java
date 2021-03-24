@@ -28,6 +28,7 @@ public class Receiver {
             byte[] bytArr = new byte[1024];
             initializeDatagramPacket(bytArr);
             datSock.receive(datPac);
+            System.out.println(datSock.getChannel()+ "\n"+ datSock.getSendBufferSize());
             String str = new String(datPac.getData(),0, datPac.getLength());
             System.out.println(str);
             if(filename != null) {
