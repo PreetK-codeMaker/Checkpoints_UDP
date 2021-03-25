@@ -1,7 +1,9 @@
 package packets;
 
 import com.sun.istack.internal.Nullable;
+import util.Utilities;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,12 +14,14 @@ import java.util.BitSet;
 import java.util.Date;
 import java.util.zip.CRC32;
 
-public class Packet {
+public class Packet implements Serializable {
     private int type;
     private int tr;
     private int windows;
     private int sequenceNumber;
     private int length;
+    private int timestamp;
+    private byte[] checksum;
     private byte[] payload;
     private final int HEADER = 40;
     private final int PAYLOAD_AND_HEADER =  512 + HEADER;
@@ -25,18 +29,22 @@ public class Packet {
     public Packet() {
     }
 
-    public Packet(int type, int tr, int windows, int sequenceNumber, int length, byte[] payload) {
+    public Packet(int type, int tr, int windows, int sequenceNumber, int length, int timestamp, byte[] checksum, byte[] payload) {
         this.type =  type;
         this.tr = tr;
         this.windows =  windows;
         this.sequenceNumber = sequenceNumber;
         this.length =  length;
+        this.timestamp = timestamp;
+        this.checksum = checksum;
         this.payload = payload;
     }
 
     public int getType() {
         return type;
     }
+
+    public void setType(int type) { this.type = type; }
 
     public int getTr() {
         return tr;
@@ -46,26 +54,37 @@ public class Packet {
         return windows;
     }
 
+    public void setWindows(int windows) { this.windows = windows; }
+
     public int getSequenceNumber() {
         return sequenceNumber;
     }
+
+    public void setSequenceNumber(int sequenceNumber) { this.sequenceNumber = sequenceNumber; }
 
     public int getLength() {
         return length;
     }
 
+    public void setLength(int length) { this.length = length; }
+
+    public int getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(int timestamp) { this.timestamp = timestamp; }
+
+    public byte[] getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(byte[] checksum) { this.checksum = checksum; }
+
     public byte[] getPayload() {
         return payload;
     }
 
-    public static byte[] checksum(byte[] payload){
-        CRC32 check = new CRC32();
-        check.update(payload);
-        String crcNumber = check.getValue()+"";
-        byte[] checkBytes = ByteBuffer.allocate(4).putLong(check.getValue()).array();
-//        byte [] checkBytes = crcNumber.getBytes(StandardCharsets.UTF_8);
-        return checkBytes;
-    }
+    public void setPayload(byte[] payload) { this.payload = payload; }
 
     public static class PacketBuilder {
         private int type;
@@ -73,6 +92,8 @@ public class Packet {
         private int windows;
         private int sequenceNumber;
         private int length;
+        private int timestamp;
+        private byte[] checkSumValue;
         private byte[] payload;
         private final int HEADER = 40;
         private final int PAYLOAD_AND_HEADER =  512 + HEADER;
@@ -100,10 +121,24 @@ public class Packet {
         }
 
         public PacketBuilder setLength(int length) {
-            this.length = (byte)Integer.toUnsignedLong(length);
+            this.length = (int) Integer.toUnsignedLong(length);
             return this;
         }
 
+        public PacketBuilder setTimestamp() {
+            this.timestamp = (int) Integer.toUnsignedLong((int) (System.currentTimeMillis()/1000));
+            return this;
+        }
+
+        public PacketBuilder setTimestamp(int timestamp) {
+            this.timestamp = (int) Integer.toUnsignedLong(timestamp);
+            return this;
+        }
+
+        public PacketBuilder setCheckSum(byte[] payload) {
+            this.checkSumValue =(byte[]) Utilities.checksum(payload);
+            return this;
+        }
 
         public PacketBuilder setPayload(byte[] payload) {
             this.payload = payload;
@@ -111,19 +146,8 @@ public class Packet {
         }
 
         public Packet createPack() {
-            return new Packet(type, tr, windows, sequenceNumber, length, payload);
+            return new Packet(type, tr, windows, sequenceNumber, length, timestamp, checkSumValue, payload);
         }
 
-    }
-
-    public static void main(String[] args) {
-        Packet pa = new Packet.PacketBuilder().setType(0x2002).setTr(0).setWindows(12).setSequenceNumber(1).setLength(22)
-                .setPayload(null).createPack();
-        ArrayList<Packet> na = new ArrayList<>();
-        na.add(pa);
-        for (int i = 0; i < na.size(); i++) {
-            System.out.println( na.get(i).getType() );
-
-        }
     }
 }
