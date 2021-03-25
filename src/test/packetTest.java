@@ -21,7 +21,6 @@ public class packetTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		util = new Utilities();
 		Packet pac = new Packet.PacketBuilder()
 							.setType(0x02)
 							.setTr(0x0)
@@ -29,8 +28,8 @@ public class packetTest {
 							.setSequenceNumber(0x1)
 							.setLength(0x117)
 							.setTimestamp()
-					 		.setCheckSum((util.fileSender("res/yo.txt").getBytes(StandardCharsets.UTF_8)))
-							.setPayload((util.fileSender("res/yo.txt").getBytes(StandardCharsets.UTF_8)))
+					 		.setCheckSum((Utilities.fileSender("res/yo.txt").getBytes(StandardCharsets.UTF_8)))
+							.setPayload((Utilities.fileSender("res/yo.txt").getBytes(StandardCharsets.UTF_8)))
 							.createPack();
 		arrPac = new ArrayList<>();
 		arrPac.add(pac);
@@ -110,7 +109,7 @@ public class packetTest {
 	@Test
 	public void testChecksumSet() {
 		CRC32 newCheck = new CRC32();
-		newCheck.update(arrPac.get(0).setChecksum((util.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
+		newCheck.update(arrPac.get(0).setChecksum((Utilities.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
 		assertEquals(newCheck.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
 	}
 
@@ -120,7 +119,7 @@ public class packetTest {
 		for(Packet arr :  arrPac) {
 			name = new String(arr.getPayload(), StandardCharsets.UTF_8);
 		}
-		assertEquals(util.fileSender("res/yo.txt"), name);
+		assertEquals(Utilities.fileSender("res/yo.txt"), name);
 	}
 
 	@Test
