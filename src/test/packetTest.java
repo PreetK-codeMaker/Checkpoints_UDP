@@ -122,12 +122,14 @@ public class packetTest {
 		assertEquals(Utilities.fileSender("res/yo.txt"), name);
 	}
 
-	@Test
+		@Test
 	public void testPayloadSet() {
 		String name = null;
-		for(Packet arr : arrPac) {
-			//name = new String(arr.setPayload("res/new.txt").getBytes(StandardCharsets.UTF_8));
+		for (int i = 0; i <arrPac.size() ; i++) {
+			arrPac.get(0).setPayload(Utilities.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8));
 		}
+
+		assertEquals(Utilities.fileSender("res/new.txt"),new String(arrPac.get(0).getPayload(),StandardCharsets.UTF_8));
 	}
 
 	@AfterClass
