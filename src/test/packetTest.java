@@ -33,7 +33,6 @@ public class packetTest {
 							.createPack();
 		arrPac = new ArrayList<>();
 		arrPac.add(pac);
-		util.toByteArr(arrPac.get(0));
 
 	}
 
@@ -102,14 +101,15 @@ public class packetTest {
 	@Test
 	public void testChecksumGet() {
 		CRC32 verify = new CRC32 ();
-		verify.update(arrPac.get(0).getPayload());
-		assertEquals(verify.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
+		verify.update(Utilities.fileSender("res/yo.txt").getBytes(StandardCharsets.UTF_8));
+		assertEquals( verify.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
 	}
 
 	@Test
 	public void testChecksumSet() {
 		CRC32 newCheck = new CRC32();
-		newCheck.update(arrPac.get(0).setChecksum((Utilities.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
+		arrPac.get(0).setChecksum((Utilities.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8)));
+		newCheck.update(arrPac.get(0).getPayload());
 		assertEquals(newCheck.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
 	}
 

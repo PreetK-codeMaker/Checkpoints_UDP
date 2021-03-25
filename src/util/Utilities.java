@@ -31,7 +31,7 @@ public class Utilities {
         }
         return toBeReturned;
     }
-    public ststic byte[] toByteArr(Packet p){
+    public static byte[] toByteArr(Packet p){
         byte[] tooPac = {(byte)p.getType(), (byte)p.getTr(), (byte)p.getWindows(), (byte)p.getSequenceNumber(), (byte)p.getLength()};
         return tooPac;
     }
