@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 
 public class Utilities {
-    public String fileSender(String fileLocation) {
+    public static String fileSender(String fileLocation) {
         File file = new File(fileLocation);
         String toBeReturned = "";
         if(fileLocation.endsWith(".txt")) {
@@ -31,7 +31,7 @@ public class Utilities {
         }
         return toBeReturned;
     }
-    public byte[] toByteArr(Packet p){
+    public ststic byte[] toByteArr(Packet p){
         byte[] tooPac = {(byte)p.getType(), (byte)p.getTr(), (byte)p.getWindows(), (byte)p.getSequenceNumber(), (byte)p.getLength()};
         return tooPac;
     }
