@@ -1,18 +1,8 @@
 package packets;
 
-import com.sun.istack.internal.Nullable;
 import util.Utilities;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.zip.CRC32;
 
 public class Packet implements Serializable {
     private int type;
@@ -78,7 +68,9 @@ public class Packet implements Serializable {
         return checksum;
     }
 
-    public void setChecksum(byte[] checksum) { this.checksum = checksum; }
+    public byte[] setChecksum(byte[] checksum) { this.checksum = Utilities.checksum(checksum);
+        return checksum;
+    }
 
     public byte[] getPayload() {
         return payload;

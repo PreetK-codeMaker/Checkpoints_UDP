@@ -73,7 +73,8 @@ public class packetTest {
 
 	@Test
 	public void testSequenceNumberSet() {
-		//arrPac.
+		arrPac.get(0).setSequenceNumber(0x31);
+		assertEquals(0x31, arrPac.get(0).getSequenceNumber());
 	}
 
 
@@ -83,8 +84,20 @@ public class packetTest {
 	}
 
 	@Test
+	public void testLengthSet() {
+		arrPac.get(0).setLength(0x30);
+		assertEquals(0x30, arrPac.get(0).getLength());
+	}
+
+	@Test
 	public void testTimestampGet() {
 		assertEquals(System.currentTimeMillis()/1000, arrPac.get(0).getTimestamp());
+	}
+
+	@Test
+	public void testTimestampSet() {
+		arrPac.get(0).setTimestamp(1400);
+		assertEquals(1400, arrPac.get(0).getTimestamp());
 	}
 
 	@Test
@@ -95,12 +108,27 @@ public class packetTest {
 	}
 
 	@Test
+	public void testChecksumSet() {
+		CRC32 newCheck = new CRC32();
+		newCheck.update(arrPac.get(0).setChecksum((util.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
+		assertEquals(newCheck.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
+	}
+
+	@Test
 	public void testPayloadGet() {
 		String name = null;
 		for(Packet arr :  arrPac) {
 			name = new String(arr.getPayload(), StandardCharsets.UTF_8);
 		}
 		assertEquals(util.fileSender("res/yo.txt"), name);
+	}
+
+	@Test
+	public void testPayloadSet() {
+		String name = null;
+		for(Packet arr : arrPac) {
+			//name = new String(arr.setPayload("res/new.txt").getBytes(StandardCharsets.UTF_8));
+		}
 	}
 
 	@AfterClass
