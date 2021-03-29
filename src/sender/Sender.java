@@ -24,8 +24,7 @@ public class Sender {
             byte[] bytArr = String.valueOf(fileSender(fileName)).getBytes(StandardCharsets.UTF_8);
             InetAddress addr = InetAddress.getByName(ipAddress);
             initializeDatagramPacket(bytArr,addr);
-
-            ;
+            datSock.send(datPac);
         }catch(SocketException | UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
