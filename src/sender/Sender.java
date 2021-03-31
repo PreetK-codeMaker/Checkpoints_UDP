@@ -1,5 +1,7 @@
 package sender;
 
+import util.Utilities;
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +23,7 @@ public class Sender {
     private void runSender () {
         try{
             initializeDatagramSocket();
-            byte[] bytArr = String.valueOf(fileSender(fileName)).getBytes(StandardCharsets.UTF_8);
+            byte[] bytArr = String.valueOf(Utilities.fileSender(fileName)).getBytes(StandardCharsets.UTF_8);
             InetAddress addr = InetAddress.getByName(ipAddress);
             initializeDatagramPacket(bytArr,addr);
 
@@ -39,27 +41,27 @@ public class Sender {
         datPac = new DatagramPacket(arr, arr.length,add,portNumber);
     }
 
-    private String fileSender (String fileLocation) {
-        File file = new File(fileLocation);
-        String toBeReturned = "";
-        if(fileLocation.endsWith(".txt")) {
-            try {
-                FileReader fr = new FileReader(file);
-                BufferedReader br = new BufferedReader(fr);
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    System.out.println(line);
-                    toBeReturned += line;
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            toBeReturned = fileLocation;
-        }
-        return toBeReturned;
-    }
+//    private String fileSender (String fileLocation) {
+//        File file = new File(fileLocation);
+//        String toBeReturned = "";
+//        if(fileLocation.endsWith(".txt")) {
+//            try {
+//                FileReader fr = new FileReader(file);
+//                BufferedReader br = new BufferedReader(fr);
+//
+//                String line;
+//                while ((line = br.readLine()) != null) {
+//                    System.out.println(line);
+//                    toBeReturned += line;
+//                }
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        } else {
+//            toBeReturned = fileLocation;
+//        }
+//        return toBeReturned;
+//    }
 }

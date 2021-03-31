@@ -108,7 +108,7 @@ public class Packet implements Serializable {
 
 
         public PacketBuilder setSequenceNumber(int sequenceNumber) {
-            this.sequenceNumber = (byte) Integer.toUnsignedLong(sequenceNumber);
+            this.sequenceNumber = (int) Integer.toUnsignedLong(sequenceNumber);
             return this;
         }
 
@@ -128,7 +128,7 @@ public class Packet implements Serializable {
         }
 
         public PacketBuilder setCheckSum(byte[] payload) {
-            this.checkSumValue =(byte[]) Utilities.checksum(payload);
+            this.checkSumValue =Utilities.checksum(payload);
             return this;
         }
 
