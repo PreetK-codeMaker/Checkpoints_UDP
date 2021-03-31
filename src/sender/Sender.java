@@ -1,10 +1,13 @@
 package sender;
 
+import packets.Packet;
 import util.Utilities;
 
+import javax.rmi.CORBA.Util;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.zip.CRC32;
 
 public class Sender {
     private String fileName;
@@ -23,11 +26,11 @@ public class Sender {
     private void runSender () {
         try{
             initializeDatagramSocket();
-            byte[] bytArr = String.valueOf(Utilities.fileSender(fileName)).getBytes(StandardCharsets.UTF_8);
+            byte[] bytArr = Utilities.packetToBuffer(packetInitialize()).array();
             InetAddress addr = InetAddress.getByName(ipAddress);
             initializeDatagramPacket(bytArr,addr);
 
-            ;
+            datSock.send(datPac);
         }catch(SocketException | UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -39,6 +42,20 @@ public class Sender {
     }
     private void initializeDatagramPacket(byte[] arr, InetAddress add) {
         datPac = new DatagramPacket(arr, arr.length,add,portNumber);
+    }
+
+    private Packet packetInitialize() {
+        Packet pac = new Packet.PacketBuilder()
+                .setType(1) //1
+                .setTr(1)   //2
+                .setWindows(31) //3
+                .setSequenceNumber(255)
+                .setLength(512)
+                .setTimestamp()
+                .setCheckSum(Utilities.fileSender(fileName).getBytes(StandardCharsets.UTF_8))
+                .setPayload(Utilities.fileSender(fileName).getBytes(StandardCharsets.UTF_8))
+                .createPack();
+        return pac;
     }
 
 //    private String fileSender (String fileLocation) {

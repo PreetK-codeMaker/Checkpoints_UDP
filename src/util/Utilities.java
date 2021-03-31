@@ -5,6 +5,7 @@ import packets.Packet;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.zip.CRC32;
 
 public  class Utilities {
@@ -36,12 +37,11 @@ public  class Utilities {
         return tooPac;
     }
 
-    public static byte[] checksum(byte[] payload){
+    public static long checksum(byte[] payload){
        CRC32 check = new CRC32();
         check.update(payload, 0 , payload.length);
 
-        byte[] checkBytes = ByteBuffer.allocate(4).putInt((int) check.getValue()).array();
-        System.out.println(ByteBuffer.wrap(checkBytes).getInt()+ "----"+ "Get ---");
+      long checkBytes = check.getValue();
         return checkBytes;
     }
 
@@ -50,21 +50,37 @@ public  class Utilities {
     }
 
     public static Packet BufferToPacket(ByteBuffer buff) {
-        buff.flip();
 
         Packet pac = new Packet.PacketBuilder().
-                                setType(buff.get    ()) //4
+                                setType(buff.get()) //4
                                 .setTr(buff.get()) //8
                                 .setWindows(buff.get()) //12
                                 .setSequenceNumber(buff.getInt()) // 20
                                 .setLength(buff.getInt()) // 16
                                 .setTimestamp(buff.getInt()) // 24
-                                .setCheckSum(ByteBuffer.allocate(4).putInt(buff.getInt()).array())
+                                .setCheckSum(buff.getInt())
                                 .setPayload(payLoadToByteArr(buff))
                                 .createPack();// 28
 
 
         return pac;
+    }
+
+    public static ByteBuffer packetToBuffer (Packet pac) {
+        ByteBuffer bs = ByteBuffer.allocate(516).order(ByteOrder.BIG_ENDIAN);
+
+        bs.put((byte) pac.getType());
+        bs.put((byte) pac.getTr());
+        bs.put((byte) pac.getWindows());
+        bs.putInt(pac.getSequenceNumber());
+        bs.putInt(pac.getLength());
+        bs.putInt(pac.getTimestamp());
+        bs.putLong(pac.getChecksum());
+        bs.put(pac.getPayload());
+
+        bs.flip();
+
+        return bs;
     }
 
     private static byte[] payLoadToByteArr(ByteBuffer r) {

@@ -11,7 +11,7 @@ public class Packet implements Serializable {
     private int sequenceNumber;
     private int length;
     private int timestamp;
-    private byte[] checksum;
+    private long checksum;
     private byte[] payload;
     private final int HEADER = 40;
     private final int PAYLOAD_AND_HEADER =  512 + HEADER;
@@ -19,7 +19,7 @@ public class Packet implements Serializable {
     public Packet() {
     }
 
-    public Packet(int type, int tr, int windows, int sequenceNumber, int length, int timestamp, byte[] checksum, byte[] payload) {
+    public Packet(int type, int tr, int windows, int sequenceNumber, int length, int timestamp, long checksum, byte[] payload) {
         this.type =  type;
         this.tr = tr;
         this.windows =  windows;
@@ -64,7 +64,7 @@ public class Packet implements Serializable {
 
     public void setTimestamp(int timestamp) { this.timestamp = timestamp; }
 
-    public byte[] getChecksum() {
+    public long getChecksum() {
         return checksum;
     }
 
@@ -85,9 +85,9 @@ public class Packet implements Serializable {
         private int sequenceNumber;
         private int length;
         private int timestamp;
-        private byte[] checkSumValue;
+        private long checkSumValue;
         private byte[] payload;
-        private final int HEADER = 40;
+        private final int HEADER = 32;
         private final int PAYLOAD_AND_HEADER =  512 + HEADER;
 
 
@@ -129,6 +129,11 @@ public class Packet implements Serializable {
 
         public PacketBuilder setCheckSum(byte[] payload) {
             this.checkSumValue =Utilities.checksum(payload);
+            return this;
+        }
+
+        public PacketBuilder setCheckSum(int checkSum) {
+            this.checkSumValue = checkSum;
             return this;
         }
 

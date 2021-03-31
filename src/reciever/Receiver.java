@@ -1,10 +1,16 @@
 package reciever;
 
+import packets.Packet;
+import util.Utilities;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.CRC32;
 
 public class Receiver {
     private String filename;
@@ -28,7 +34,15 @@ public class Receiver {
             byte[] bytArr = new byte[1024];
             initializeDatagramPacket(bytArr);
             datSock.receive(datPac);
-            String str = new String(datPac.getData(),0, datPac.getLength());
+            Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
+            long check = Utilities.checksum(p.getPayload());
+            long receiveCheck = p.getChecksum();
+            System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
+
+            if (receiveCheck == check) {
+                System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
+            }
+            String str = new String(p.getPayload(), StandardCharsets.UTF_8);
             System.out.println(str);
             if(filename != null) {
                 fileMaker(str);
