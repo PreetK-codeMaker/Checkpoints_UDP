@@ -6,6 +6,7 @@ import packets.Packet;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.zip.CRC32;
 
 public  class Utilities {
@@ -36,12 +37,28 @@ public  class Utilities {
         byte[] tooPac = {(byte)p.getType(), (byte)p.getTr(), (byte)p.getWindows(), (byte)p.getSequenceNumber(), (byte)p.getLength()};
         return tooPac;
     }
+    public static int recieverChecksum(byte[] payload){
+        ArrayList<Byte> lol = new ArrayList<Byte>();
+        for (int i = 0; i < payload.length; i++) {
+            if(payload[i] != 0) {
+                lol.add(payload[i]);
+            }
+        }
+        CRC32 check = new CRC32();
+        byte [] arr = new byte[lol.size()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = lol.get(i);
+        }
+        check.update(arr);
 
-    public static long checksum(byte[] payload){
+        int checkBytes = (int) check.getValue();
+        return checkBytes;
+    }
+    public static int checksum(byte[] payload) {
        CRC32 check = new CRC32();
-        check.update(payload, 0 , payload.length);
+        check.update(payload);
 
-      long checkBytes = check.getValue();
+        int checkBytes = (int) check.getValue();
         return checkBytes;
     }
 
@@ -75,7 +92,7 @@ public  class Utilities {
         bs.putInt(pac.getSequenceNumber());
         bs.putInt(pac.getLength());
         bs.putInt(pac.getTimestamp());
-        bs.putLong(pac.getChecksum());
+        bs.putInt(pac.getChecksum());
         bs.put(pac.getPayload());
 
         bs.flip();

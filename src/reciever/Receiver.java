@@ -31,18 +31,19 @@ public class Receiver {
     public void runReceiver()  {
         try {
             initializeDatagramSocket();
-            byte[] bytArr = new byte[1024];
+            byte[] bytArr = new byte[512];
             initializeDatagramPacket(bytArr);
             datSock.receive(datPac);
             Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
-            long check = Utilities.checksum(p.getPayload());
-            long receiveCheck = p.getChecksum();
+            String str = new String(p.getPayload(), StandardCharsets.UTF_8);
+            int check = Utilities.recieverChecksum(str.getBytes(StandardCharsets.UTF_8));
+            int receiveCheck = p.getChecksum();
             System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
 
             if (receiveCheck == check) {
                 System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
             }
-            String str = new String(p.getPayload(), StandardCharsets.UTF_8);
+//            String str = new String(p.getPayload(), StandardCharsets.UTF_8);
             System.out.println(str);
             if(filename != null) {
                 fileMaker(str);
