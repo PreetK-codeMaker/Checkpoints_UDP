@@ -63,6 +63,7 @@ public  class Utilities {
         int checkBytes = (int) check.getValue();
         return checkBytes;
     }
+
     public static int checksum(byte[] payload) {
        CRC32 check = new CRC32();
         check.update(payload);
@@ -93,8 +94,8 @@ public  class Utilities {
     }
 
     public static ByteBuffer packetToBuffer (Packet pac) {
-//        byte[] br = {buff.get(), buff.get(), buff.get()};
-        ByteBuffer bs = ByteBuffer.allocate(516).order(ByteOrder.BIG_ENDIAN);
+
+        ByteBuffer bs = ByteBuffer.allocate(529).order(ByteOrder.BIG_ENDIAN);
 
         bs.put((byte) pac.getType());
         bs.put((byte) pac.getTr());
@@ -104,7 +105,7 @@ public  class Utilities {
         bs.putInt(pac.getTimestamp());
         bs.putInt(pac.getChecksum());
         bs.put(pac.getPayload());
-
+        System.out.println(bs.limit() + "********----------------------------------------------------");
         bs.flip();
 
         return bs;
@@ -125,21 +126,21 @@ public  class Utilities {
         return payDiv;
     }
 
-    public static byte[] intToByte (final int i) {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(bos);
-        try {
-            dos.writeInt(i);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            dos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bos.toByteArray();
-    }
+//    public static byte[] intToByte (final int i) {
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        DataOutputStream dos = new DataOutputStream(bos);
+//        try {
+//            dos.writeInt(i);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        try {
+//            dos.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bos.toByteArray();
+//    }
 
     private static byte[] payLoadToByteArr(ByteBuffer r) {
         byte[] arr = new byte[r.remaining()];

@@ -24,23 +24,20 @@ public class Sender {
         this.fileName = fileName;
         this.ipAddress = ipAddress;
         this.portNumber = portNumber;
-//        Utilities.payloadDivider(Utilities.fileSender(fileName));
-        initializePackets();
+        pacList = new ArrayList<Packet>();
+        loadPackets();
         runSender();
-    }
-
-    private void initializePackets() {
-
     }
 
     private void runSender () {
         try{
             initializeDatagramSocket();
-            byte[] bytArr = Utilities.packetToBuffer(packetInitialize()).array();
             InetAddress addr = InetAddress.getByName(ipAddress);
-            initializeDatagramPacket(bytArr,addr);
+            for (int i = 0; i < pacList.size(); i++) {
+                initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(i)).array(),addr);
+                datSock.send(datPac);
+            }
 
-            datSock.send(datPac);
         }catch(SocketException | UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -54,16 +51,29 @@ public class Sender {
         datPac = new DatagramPacket(arr, arr.length,add,portNumber);
     }
 
-    private Packet packetInitialize() {
+
+    private void loadPackets() {
+        byte [][] dividedPayload = Utilities.payloadDivider(Utilities.fileSender(fileName));
+        for (int i = 0; i < dividedPayload.length; i++) {
+            byte [] added = new byte[dividedPayload[i].length];
+            for (int j = 0; j < dividedPayload[i].length; j++) {
+                added[j] = dividedPayload[i][j];
+            }
+            pacList.add(packetInitialize(added, i));
+        }
+
+    }
+
+    private Packet packetInitialize(byte[] payload, int i) {
         Packet pac = new Packet.PacketBuilder()
                 .setType(1) //1
-                .setTr(1)   //2
+                .setTr(0)   //2
                 .setWindows(31) //3
-                .setSequenceNumber(255)
-                .setLength(512)
+                .setSequenceNumber((i %256))
+                .setLength(payload.length)
                 .setTimestamp()
                 .setCheckSum(0)
-                .setPayload(Utilities.fileSender(fileName).getBytes(StandardCharsets.UTF_8))
+                .setPayload(payload)
                 .createPack();
         pac.setChecksum(Utilities.toByteArr(pac));
         return pac;

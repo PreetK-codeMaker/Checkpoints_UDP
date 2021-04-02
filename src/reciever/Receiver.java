@@ -43,8 +43,6 @@ public class Receiver {
             if (receiveCheck == check) {
                 System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
             }
-//            String str = new String(p.getPayload(), StandardCharsets.UTF_8);
-            System.out.println(str);
             if(filename != null) {
                 fileMaker(str);
             }
