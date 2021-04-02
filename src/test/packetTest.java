@@ -109,7 +109,7 @@ public class packetTest {
 	@Test
 	public void testChecksumSet() {
 		CRC32 newCheck = new CRC32();
-		newCheck.update(arrPac.get(0).setChecksum((util.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
+//		newCheck.update(arrPac.get(0).setChecksum((util.fileSender("res/new.txt").getBytes(StandardCharsets.UTF_8))));
 		//assertEquals(newCheck.getValue(), ByteBuffer.wrap(arrPac.get(0).getChecksum()).getLong());
 	}
 

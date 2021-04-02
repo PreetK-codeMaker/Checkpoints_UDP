@@ -3,12 +3,9 @@ package sender;
 import packets.Packet;
 import util.Utilities;
 
-import javax.rmi.CORBA.Util;
-import java.io.*;
+import java.io.IOException;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.zip.CRC32;
 
 public class Sender {
     private String fileName;
@@ -34,7 +31,7 @@ public class Sender {
             initializeDatagramSocket();
             InetAddress addr = InetAddress.getByName(ipAddress);
             for (int i = 0; i < pacList.size(); i++) {
-                initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(i)).array(),addr);
+                initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(0)).array(),addr);
                 datSock.send(datPac);
             }
 

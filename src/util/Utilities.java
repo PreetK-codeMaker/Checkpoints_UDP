@@ -46,7 +46,7 @@ public  class Utilities {
 
         return buff.array();
     }
-    public static int recieverChecksum(byte[] payload){
+    public static long recieverChecksum(byte[] payload){
         ArrayList<Byte> lol = new ArrayList<Byte>();
         for (int i = 0; i < payload.length; i++) {
             if(payload[i] != 0) {
@@ -60,15 +60,15 @@ public  class Utilities {
         }
         check.update(arr);
 
-        int checkBytes = (int) check.getValue();
+        long checkBytes =  check.getValue();
         return checkBytes;
     }
 
-    public static int checksum(byte[] payload) {
+    public static long checksum(byte[] payload) {
        CRC32 check = new CRC32();
         check.update(payload);
 
-        int checkBytes = (int) check.getValue();
+        long checkBytes =  check.getValue();
         return checkBytes;
     }
 
@@ -85,7 +85,7 @@ public  class Utilities {
                                 .setSequenceNumber(buff.getInt()) // 20
                                 .setLength(buff.getInt()) // 16
                                 .setTimestamp(buff.getInt()) // 24
-                                .setCheckSum(buff.getInt())
+                                .setCheckSum(buff.getLong())
                                 .setPayload(payLoadToByteArr(buff))
                                 .createPack();// 28
 
@@ -95,7 +95,7 @@ public  class Utilities {
 
     public static ByteBuffer packetToBuffer (Packet pac) {
 
-        ByteBuffer bs = ByteBuffer.allocate(529).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bs = ByteBuffer.allocate(533).order(ByteOrder.BIG_ENDIAN);
 
         bs.put((byte) pac.getType());
         bs.put((byte) pac.getTr());
@@ -103,7 +103,7 @@ public  class Utilities {
         bs.putInt(pac.getSequenceNumber());
         bs.putInt(pac.getLength());
         bs.putInt(pac.getTimestamp());
-        bs.putInt(pac.getChecksum());
+        bs.putLong(pac.getChecksum());
         bs.put(pac.getPayload());
         System.out.println(bs.limit() + "********----------------------------------------------------");
         bs.flip();
@@ -126,24 +126,8 @@ public  class Utilities {
         return payDiv;
     }
 
-//    public static byte[] intToByte (final int i) {
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        DataOutputStream dos = new DataOutputStream(bos);
-//        try {
-//            dos.writeInt(i);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        try {
-//            dos.flush();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return bos.toByteArray();
-//    }
-
     private static byte[] payLoadToByteArr(ByteBuffer r) {
-        byte[] arr = new byte[r.remaining()];
+        byte[] arr = new byte[r.limit() - r.remaining()];
         r.get(arr);
         return arr;
     }
@@ -154,7 +138,6 @@ public  class Utilities {
         String [] subString = new String[subSize];
         for (int i = 0; i < offset * subSize; i = i + offset) {
             subString[position ++] = payload.substring(i, Math.min(i + offset, payload.length()));
-//            subString[position ++] = payload.substring(i,  i+offset);
         }
         return  subString;
     }

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.zip.CRC32;
 
 public class Receiver {
     private String filename;
@@ -36,8 +35,8 @@ public class Receiver {
             datSock.receive(datPac);
             Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
             String str = new String(p.getPayload(), StandardCharsets.UTF_8);
-            int check = Utilities.recieverChecksum(Utilities.toByteArr(p));
-            int receiveCheck = p.getChecksum();
+            long check = Utilities.checksum(Utilities.toByteArr(p));
+            long receiveCheck = p.getChecksum();
             System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
 
             if (receiveCheck == check) {
