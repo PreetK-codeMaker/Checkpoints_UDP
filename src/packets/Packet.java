@@ -68,7 +68,7 @@ public class Packet implements Serializable {
         return checksum;
     }
 
-    public byte[] setChecksum(byte[] checksum) { this.checksum = Utilities.checksum(checksum);
+    public byte[] setChecksum(byte[] checksum) { this.checksum = Utilities.recieverChecksum(checksum);
         return checksum;
     }
 

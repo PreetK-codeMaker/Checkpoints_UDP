@@ -7,20 +7,30 @@ import javax.rmi.CORBA.Util;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.zip.CRC32;
 
 public class Sender {
     private String fileName;
     private String ipAddress;
     private int portNumber;
+    private static final int PAYLOAD_SIZE = 512;
+    private static final int HEADER_SIZE = 14;
     private DatagramSocket datSock;
     private DatagramPacket datPac;
+    private ArrayList<Packet> pacList;
 
     public Sender(String fileName, String ipAddress, int portNumber){
         this.fileName = fileName;
         this.ipAddress = ipAddress;
         this.portNumber = portNumber;
+//        Utilities.payloadDivider(Utilities.fileSender(fileName));
+        initializePackets();
         runSender();
+    }
+
+    private void initializePackets() {
+
     }
 
     private void runSender () {
@@ -52,9 +62,10 @@ public class Sender {
                 .setSequenceNumber(255)
                 .setLength(512)
                 .setTimestamp()
-                .setCheckSum(Utilities.fileSender(fileName).getBytes(StandardCharsets.UTF_8))
+                .setCheckSum(0)
                 .setPayload(Utilities.fileSender(fileName).getBytes(StandardCharsets.UTF_8))
                 .createPack();
+        pac.setChecksum(Utilities.toByteArr(pac));
         return pac;
     }
 

@@ -6,7 +6,9 @@ import packets.Packet;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.CRC32;
 
 public  class Utilities {
@@ -33,9 +35,16 @@ public  class Utilities {
         }
         return toBeReturned;
     }
-    public byte[] toByteArr(Packet p){
-        byte[] tooPac = {(byte)p.getType(), (byte)p.getTr(), (byte)p.getWindows(), (byte)p.getSequenceNumber(), (byte)p.getLength()};
-        return tooPac;
+    public static byte [] toByteArr(Packet p){
+        ByteBuffer buff = ByteBuffer.allocate(14).order(ByteOrder.BIG_ENDIAN);
+        buff.put((byte) p.getType());
+        buff.put((byte) p.getTr());
+        buff.put((byte) p.getWindows());
+        buff.putInt( p.getSequenceNumber());
+        buff.putInt( p.getLength());
+        buff.flip();
+
+        return buff.array();
     }
     public static int recieverChecksum(byte[] payload){
         ArrayList<Byte> lol = new ArrayList<Byte>();
@@ -84,6 +93,7 @@ public  class Utilities {
     }
 
     public static ByteBuffer packetToBuffer (Packet pac) {
+//        byte[] br = {buff.get(), buff.get(), buff.get()};
         ByteBuffer bs = ByteBuffer.allocate(516).order(ByteOrder.BIG_ENDIAN);
 
         bs.put((byte) pac.getType());
@@ -100,10 +110,19 @@ public  class Utilities {
         return bs;
     }
 
-    private static byte[] payLoadToByteArr(ByteBuffer r) {
-        byte[] arr = new byte[r.remaining()];
-        r.get(arr);
-        return arr;
+    public static byte[][] payloadDivider(String payload) {
+        int spotNeeded = (int) Math.ceil((double) payload.length()/512 );
+        byte[][] payDiv = new byte[spotNeeded][];
+
+        if(spotNeeded == 1) {
+            payDiv[0] = payload.getBytes(StandardCharsets.UTF_8);
+        } else {
+            String[] dividedPayload = equalStringSplit(payload, spotNeeded);
+            for (int i = 0; i < spotNeeded; i++) {
+                payDiv[i] = dividedPayload[i].getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        return payDiv;
     }
 
     public static byte[] intToByte (final int i) {
@@ -120,5 +139,22 @@ public  class Utilities {
             e.printStackTrace();
         }
         return bos.toByteArray();
+    }
+
+    private static byte[] payLoadToByteArr(ByteBuffer r) {
+        byte[] arr = new byte[r.remaining()];
+        r.get(arr);
+        return arr;
+    }
+
+    private static String[] equalStringSplit(String payload, int subSize) {
+        int position = 0;
+        int offset = (payload.length() / subSize);
+        String [] subString = new String[subSize];
+        for (int i = 0; i < offset * subSize; i = i + offset) {
+            subString[position ++] = payload.substring(i, Math.min(i + offset, payload.length()));
+//            subString[position ++] = payload.substring(i,  i+offset);
+        }
+        return  subString;
     }
 }

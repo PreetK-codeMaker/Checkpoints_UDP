@@ -34,7 +34,6 @@ public class packetTest {
 							.createPack();
 		arrPac = new ArrayList<>();
 		arrPac.add(pac);
-		util.toByteArr(arrPac.get(0));
 
 	}
 

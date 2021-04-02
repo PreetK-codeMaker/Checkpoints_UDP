@@ -36,7 +36,7 @@ public class Receiver {
             datSock.receive(datPac);
             Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
             String str = new String(p.getPayload(), StandardCharsets.UTF_8);
-            int check = Utilities.recieverChecksum(str.getBytes(StandardCharsets.UTF_8));
+            int check = Utilities.recieverChecksum(Utilities.toByteArr(p));
             int receiveCheck = p.getChecksum();
             System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
 
