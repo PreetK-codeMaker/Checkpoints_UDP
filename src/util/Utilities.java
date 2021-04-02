@@ -46,30 +46,30 @@ public  class Utilities {
 
         return buff.array();
     }
-    public static long recieverChecksum(byte[] payload){
-        ArrayList<Byte> lol = new ArrayList<Byte>();
-        for (int i = 0; i < payload.length; i++) {
-            if(payload[i] != 0) {
-                lol.add(payload[i]);
-            }
-        }
-        CRC32 check = new CRC32();
-        byte [] arr = new byte[lol.size()];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = lol.get(i);
-        }
-        check.update(arr);
+//    public static long recieverChecksum(byte[] payload){
+//        ArrayList<Byte> lol = new ArrayList<Byte>();
+//        for (int i = 0; i < payload.length; i++) {
+//            if(payload[i] != 0) {
+//                lol.add(payload[i]);
+//            }
+//        }
+//        CRC32 check = new CRC32();
+//        byte [] arr = new byte[lol.size()];
+//        for (int i = 0; i < arr.length; i++) {
+//            arr[i] = lol.get(i);
+//        }
+//        check.update(arr);
+//
+//        long checkBytes =  check.getValue();
+//        return checkBytes;
+//    }
 
-        long checkBytes =  check.getValue();
-        return checkBytes;
-    }
-
-    public static long checksum(byte[] payload) {
+    public static int checksum(byte[] payload) {
        CRC32 check = new CRC32();
         check.update(payload);
 
-        long checkBytes =  check.getValue();
-        return checkBytes;
+        int checkBytes = (int) check.getValue();
+        return checkBytes &  0x7FFFFFFF;
     }
 
     public static ByteBuffer byteArrToBuffer (byte[] arr) {
@@ -85,7 +85,7 @@ public  class Utilities {
                                 .setSequenceNumber(buff.getInt()) // 20
                                 .setLength(buff.getInt()) // 16
                                 .setTimestamp(buff.getInt()) // 24
-                                .setCheckSum(buff.getLong())
+                                .setCheckSum(buff.getInt())
                                 .setPayload(payLoadToByteArr(buff))
                                 .createPack();// 28
 
@@ -95,7 +95,7 @@ public  class Utilities {
 
     public static ByteBuffer packetToBuffer (Packet pac) {
 
-        ByteBuffer bs = ByteBuffer.allocate(533).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bs = ByteBuffer.allocate(529).order(ByteOrder.BIG_ENDIAN);
 
         bs.put((byte) pac.getType());
         bs.put((byte) pac.getTr());
@@ -103,7 +103,7 @@ public  class Utilities {
         bs.putInt(pac.getSequenceNumber());
         bs.putInt(pac.getLength());
         bs.putInt(pac.getTimestamp());
-        bs.putLong(pac.getChecksum());
+        bs.putInt(pac.getChecksum());
         bs.put(pac.getPayload());
         System.out.println(bs.limit() + "********----------------------------------------------------");
         bs.flip();
