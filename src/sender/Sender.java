@@ -5,10 +5,7 @@ import util.Utilities;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Queue;
-import java.util.Timer;
+import java.util.*;
 
 public class Sender {
     private String fileName;
@@ -36,6 +33,9 @@ public class Sender {
         this.ipAddress = ipAddress;
         this.portNumber = portNumber;
         pacList = new ArrayList<Packet>();
+        pacQue = new LinkedList<>();
+        winList = new ArrayList<>();
+        initializeDatagramSocket();
         limitWindow = 3;
         loadPackets();
         selectiveRepeat();
@@ -126,9 +126,9 @@ public class Sender {
 //            e.printStackTrace();
 //        }
 //    }
-//    private void initializeDatagramSocket() throws SocketException {
-//        datSock = new DatagramSocket();
-//    }
+    private void initializeDatagramSocket() throws SocketException {
+        datSock = new DatagramSocket();
+    }
 //    private void initializeDatagramPacket(byte[] arr, InetAddress add) {
 //        datPac = new DatagramPacket(arr, arr.length,add,portNumber);
 //    }

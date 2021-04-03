@@ -22,25 +22,28 @@ public class Receiver {
     private final int NAK = 0;
     private int maxWindow;
 
-    public Receiver(int portNumber) {
+    public Receiver(int portNumber) throws IOException {
         this.portNumber = portNumber;
-        runReceiver();
+        slidingWindow();
+//        runReceiver();
     }
 
-    public Receiver(String fileName, int portNumber) {
+    public Receiver(String fileName, int portNumber) throws IOException {
         this.filename = fileName;
         this.portNumber = portNumber;
-        runReceiver();
+        initializeDatagramSocket();
+        slidingWindow();
+//        runReceiver();
     }
 
-    public Receiver(String fileName, int maxWindow, int portNumber) {
+    public Receiver(String fileName, int maxWindow, int portNumber) throws IOException {
         this.filename = fileName;
         byte[] bytArr = new byte[512];
         initializeDatagramPacket(bytArr);
         Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
         this.maxWindow = p.getWindows();
         this.portNumber = portNumber;
-        runReceiver();
+        slidingWindow();
     }
 
     public void runReceiver() {
@@ -62,7 +65,7 @@ public class Receiver {
     }
 
     public void slidingWindow() throws IOException {
-        windowList = new int[maxWindow];
+        windowList = new int[31];
         Arrays.fill(windowList, NAK);
         byte[] received = new byte[512];
         DatagramPacket rp = new DatagramPacket(received, received.length);
@@ -73,7 +76,7 @@ public class Receiver {
             blocked = true;
             int seqNum = p.getSequenceNumber();
             boolean corrupted = isCorrupted(rp);
-            if (corrupted) {
+            if (!corrupted) {
                 continue;
             } else {
                 ackPacket(seqNum);
@@ -131,7 +134,7 @@ public class Receiver {
         String ackMessage = ("Sequence Number: " + p.getSequenceNumber());
         byte[] ackData = new byte[ackMessage.length()];
         ackData = ackMessage.getBytes();
-        DatagramPacket ap = new DatagramPacket(ackData, ackData.length, portNumber);
+        DatagramPacket ap = new DatagramPacket(ackData, ackData.length, InetAddress.getByName("localhost"),portNumber);
         datSock.send(ap);
         return ackMessage;
     }
