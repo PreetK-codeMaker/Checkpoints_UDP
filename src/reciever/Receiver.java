@@ -3,19 +3,17 @@ package reciever;
 import packets.Packet;
 import util.Utilities;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Receiver {
     private String filename;
     private int portNumber;
-    private DatagramSocket datSock;
-    private DatagramPacket datPac;
+    private static DatagramSocket datSock;
+    private static DatagramPacket datPac;
 
     public Receiver(int portNumber) {
         this.portNumber = portNumber;
@@ -35,13 +33,13 @@ public class Receiver {
             datSock.receive(datPac);
             Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
             String str = new String(p.getPayload(), StandardCharsets.UTF_8);
-            long check = Utilities.checksum(Utilities.toByteArr(p));
-            long receiveCheck = p.getChecksum();
-            System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
-
-            if (receiveCheck == check) {
-                System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
-            }
+//            long check = Utilities.checksum(Utilities.toByteArr(p));
+//            long receiveCheck = p.getChecksum();
+//            System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
+//
+//            if (receiveCheck == check) {
+//                System.out.println("Received Checksum: "+receiveCheck + " Checksum: " + check);
+//            }
             if(filename != null) {
                 fileMaker(str);
             }
@@ -53,6 +51,38 @@ public class Receiver {
             e.printStackTrace();
         }
     }
+
+    private static void slidingWindow(InetAddress addr) throws IOException {
+        int totalPackets = 0;
+        int corruptedPackets = 0;
+
+        //initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(0)).array(),addr);
+        DatagramPacket receiveData = new DatagramPacket(datPac.getData(), datPac.getLength());
+
+        while(true) {
+            // datSock.receive(receiveData);
+            totalPackets++;
+
+            if(receiveData == null) {
+                break;
+            }
+
+            int corrupted = isCorrupted(receiveData);
+
+            if(corrupted == 2) {
+                //System.out.println();
+
+//                DatagramPacket ack = new DatagramPacket(datPac.getData(), datPac.getLength(), addr, portNumber);
+//                datSock.send(ack);
+                System.out.println("I worked!");
+            }
+            else if(corrupted == 3) {
+                System.out.println("Corrupted packet found");
+                corruptedPackets++;
+            }
+        }
+    }
+
     private void initializeDatagramSocket() throws SocketException {
         datSock = new DatagramSocket(portNumber);
     }
@@ -69,6 +99,21 @@ public class Receiver {
             e.printStackTrace();
         }
 
+    }
+
+    private static int isCorrupted(DatagramPacket dp) {
+        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(dp.getData()));
+        int check = Utilities.checksum(Utilities.toByteArr(p));
+        int receiveCheck = p.getChecksum();
+
+        if(receiveCheck == check) {
+            p.setType(2);
+            return p.getType();
+        }
+        else {
+            p.setType(3);
+            return p.getType();
+        }
     }
 
 }

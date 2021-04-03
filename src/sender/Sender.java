@@ -10,12 +10,12 @@ import java.util.ArrayList;
 public class Sender {
     private String fileName;
     private String ipAddress;
-    private int portNumber;
+    private static int portNumber;
     private static final int PAYLOAD_SIZE = 512;
     private static final int HEADER_SIZE = 14;
-    private DatagramSocket datSock;
-    private DatagramPacket datPac;
-    private ArrayList<Packet> pacList;
+    private static DatagramSocket datSock;
+    private static DatagramPacket datPac;
+    private static ArrayList<Packet> pacList;
 
     public Sender(String fileName, String ipAddress, int portNumber){
         this.fileName = fileName;
@@ -30,10 +30,12 @@ public class Sender {
         try{
             initializeDatagramSocket();
             InetAddress addr = InetAddress.getByName(ipAddress);
-            for (int i = 0; i < pacList.size(); i++) {
-                initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(0)).array(),addr);
-                datSock.send(datPac);
-            }
+            //initializeDatagramPacket(,addr);
+//            for (int i = 0; i < pacList.size(); i++) {
+//                initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(0)).array(),addr);
+//                datSock.send(datPac);
+//            }
+            slidingWindow(addr);
 
         }catch(SocketException | UnknownHostException e) {
             e.printStackTrace();
@@ -41,12 +43,27 @@ public class Sender {
             e.printStackTrace();
         }
     }
+
+    private static void slidingWindow(InetAddress addr) throws IOException {
+
+        initializeDatagramPacket(Utilities.packetToBuffer(pacList.get(0)).array(),addr);
+        DatagramPacket receiveData = new DatagramPacket(datPac.getData(), datPac.getLength());
+        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(receiveData.getData()));
+
+        while(true) {
+            if(p.getType() == 1) {
+                break;
+            }
+
+        }
+    }
     private void initializeDatagramSocket() throws SocketException {
         datSock = new DatagramSocket();
     }
-    private void initializeDatagramPacket(byte[] arr, InetAddress add) {
+    private static void initializeDatagramPacket(byte[] arr, InetAddress add) {
         datPac = new DatagramPacket(arr, arr.length,add,portNumber);
     }
+
 
 
     private void loadPackets() {
