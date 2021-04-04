@@ -14,15 +14,17 @@ public class Sender {
     private int windowSize;
     private int limitWindow;
     private int seqNumber;
-    private static final int ACK = 2;
-    private static final int NACK = 3;
+    private static final int ACK = 1;
+    private static final int NACK = 0;
     private static final int PAYLOAD_SIZE = 512;
     private static final int HEADER_SIZE = 14;
     private static int numOfTime;
     private Timer timer;
     private int timeOut;
     private int window[];
+    public boolean blocked;
     private DatagramSocket datSock;
+    private DatagramSocket receiveSock;
     private DatagramPacket datPac;
     private Queue<Packet> pacQue;
     private ArrayList<Packet> winList;
@@ -43,11 +45,17 @@ public class Sender {
 
 
     private void selectiveRepeat() throws Exception {
+        blocked = true;
         numOfTime = 0;
         timer = new Timer(true);
         windowSize = 0;
         while(true) {
+            while (pacQue.isEmpty() && windowSize == 0) {
+                blocked = false;
+                break;
+            }
             if(windowSize == 0) {
+                blocked = true;
                 windowSize = Math.min(pacQue.size(), limitWindow);
                 window =new int [windowSize];
                 Arrays.fill(window, NACK);
@@ -59,6 +67,7 @@ public class Sender {
                 }
 
             } else {
+                blocked = true;
                 int space = adjustWindow();
                 int[] moveWin  = new int[windowSize];
                 int setNewWindow = 0;
@@ -80,19 +89,30 @@ public class Sender {
                 windowSize = winList.size();
             }
             if(windowSize != 0 ) {
-                byte[] ackData = new byte[529];
+                blocked = true;
+                //receiveSock = new DatagramSocket(54321);
+
+                byte[] ackData = new byte[512];
                 DatagramPacket daPa = new DatagramPacket(ackData, ackData.length);
+                datSock = null;
+                datSock = new DatagramSocket(portNumber+2);
+                //System.out.println(datSock.getPort());
+                System.out.println(datSock.getLocalPort());
                 datSock.receive(daPa);
-                recivedAck(daPa.getData());
+                recivedAck(daPa);
+            }
+            else {
+                blocked = false;
+                windowSize = Math.min(pacQue.size(), limitWindow);
             }
         }
     }
 
-    private void recivedAck(byte[] dap) {
-        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(dap));
+    private void recivedAck(DatagramPacket dp) {
+        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(dp.getData()));
         int seq = p.getSequenceNumber();
         for (int i = 0; i < windowSize; i++) {
-            if(p.getType() == ACK) {
+            if(p.getType() == ACK || ACK == 1) {
                 window[i] = ACK;
             }
         }
@@ -128,6 +148,7 @@ public class Sender {
 //    }
     private void initializeDatagramSocket() throws SocketException {
         datSock = new DatagramSocket();
+        receiveSock = new DatagramSocket();
     }
 //    private void initializeDatagramPacket(byte[] arr, InetAddress add) {
 //        datPac = new DatagramPacket(arr, arr.length,add,portNumber);
