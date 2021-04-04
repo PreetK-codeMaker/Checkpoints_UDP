@@ -4,24 +4,30 @@ import packets.Packet;
 import util.Utilities;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Receiver {
+    private  int report;
     private String filename;
     private int portNumber;
     private static DatagramSocket datSock;
     private static DatagramPacket datPac;
     private int windowStart;
     public boolean blocked;
-    private int windowList[];
-    private final int ACK = 1;
-    private final int NAK = 0;
-    private int maxWindow;
-
+    private int windowSize = 5;
+    private int baseWindow;
+    private int window[];
+    private final int ACK = 2;
+    private final int NAK = 3;
+    private int totalFrameNUmber ;
+    ArrayList<Packet> toReceive = new ArrayList<>();
+//
     public Receiver(int portNumber) throws IOException {
         this.portNumber = portNumber;
         slidingWindow();
@@ -31,64 +37,62 @@ public class Receiver {
     public Receiver(String fileName, int portNumber) throws IOException {
         this.filename = fileName;
         this.portNumber = portNumber;
+        System.out.println(portNumber);
         initializeDatagramSocket();
         slidingWindow();
-//        runReceiver();
-    }
-
-    public Receiver(String fileName, int maxWindow, int portNumber) throws IOException {
-        this.filename = fileName;
-        byte[] bytArr = new byte[512];
-        initializeDatagramPacket(bytArr);
-        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
-        this.maxWindow = p.getWindows();
-        this.portNumber = portNumber;
-        slidingWindow();
-    }
-
-    public void runReceiver() {
-        try {
-            initializeDatagramSocket();
-            byte[] bytArr = new byte[512];
-            initializeDatagramPacket(bytArr);
-            datSock.receive(datPac);
-            Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(datPac.getData()));
-            //String str = new String(p.getPayload(), StandardCharsets.UTF_8);
-            slidingWindow();
-
-
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void slidingWindow() throws IOException {
-        windowList = new int[31];
-        Arrays.fill(windowList, NAK);
-        byte[] received = new byte[512];
+        byte[] received = new byte[530];
         DatagramPacket rp = new DatagramPacket(received, received.length);
-        while (true) {
-            blocked = false;
+
+        baseWindow = 0;
+        window = new int[windowSize];
+        Arrays.fill(window, NAK);
+        boolean run = true;
+        int timesToRUn =0;
+        int compareto = 1;
+        while (timesToRUn < compareto) {
             datSock.receive(rp);
+            report = rp.getPort();
             Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(rp.getData()));
-            blocked = true;
+
+            if ((p.getLength() != compareto)) {
+                compareto = p.getLength();
+            }
+            if(p.getType() == 1) {
+                run = false;
+            }
+           totalFrameNUmber += p.getSequenceNumber();
             int seqNum = p.getSequenceNumber();
-            boolean corrupted = isCorrupted(rp);
+            boolean corrupted = isCorrupted(p);
             if (!corrupted) {
                 continue;
             } else {
                 ackPacket(seqNum);
                 sendAck(rp);
                 windowAdjust(seqNum);
+                toReceive.add(p);
             }
-            blocked = false;
+            timesToRUn++;
         }
+        printPayload();
+    }
+
+    private void printPayload() throws IOException {
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        for (int i = 0; i < toReceive.size(); i++) {
+            byteStream.write(toReceive.get(i).getPayload());
+        }
+        byte[] concatenatedString = byteStream.toByteArray();
+        String outPut = new String(concatenatedString, StandardCharsets.UTF_8);
+        System.out.println("Packets That were send and Ack:+---------------------");
+        System.out.println(outPut);
+        System.out.println();
     }
 
     private void initializeDatagramSocket() throws SocketException {
-        datSock = new DatagramSocket(portNumber);
+        datSock = new DatagramSocket(12345);
     }
 
     private void initializeDatagramPacket(byte[] arr) {
@@ -107,8 +111,7 @@ public class Receiver {
 
     }
 
-    private static boolean isCorrupted(DatagramPacket dp) {
-        Packet p = Utilities.BufferToPacket(Utilities.byteArrToBuffer(dp.getData()));
+    private static boolean isCorrupted(Packet p) {
         int check = Utilities.checksum(Utilities.toByteArr(p));
         int receiveCheck = p.getChecksum();
 
@@ -123,8 +126,8 @@ public class Receiver {
 
     private void ackPacket(int sequenceNum) {
         if (windowStart <= sequenceNum) {
-            if (sequenceNum - windowStart < maxWindow) {
-                windowList[sequenceNum - windowStart] = ACK;
+            if (sequenceNum - windowStart < windowSize) {
+                window[sequenceNum - baseWindow] = ACK;
             }
         }
     }
@@ -134,19 +137,20 @@ public class Receiver {
         String ackMessage = ("Sequence Number: " + p.getSequenceNumber());
         byte[] ackData = new byte[ackMessage.length()];
         ackData = ackMessage.getBytes();
-        DatagramPacket ap = new DatagramPacket(ackData, ackData.length, InetAddress.getByName("localhost"),portNumber);
+        DatagramPacket ap = new DatagramPacket(ackData, ackData.length, InetAddress.getByName("localhost"),report);
+        System.out.println("Packet Acknowledged: "+ p.getSequenceNumber());
         datSock.send(ap);
         return ackMessage;
     }
 
     private void windowAdjust(int sequenceNum) {
         while (true) {
-            if(windowList[0] == ACK) {
-                for(int i = 0; i < maxWindow; i++) {
-                    windowList[i] = windowList[i + 1];
+            if(window[0] == ACK) {
+                for(int i = 0; i < windowSize-1; i++) {
+                    window[i] = window[i + 1];
                 }
-                windowList[maxWindow - 1] = NAK;
-                windowStart++;
+                window[windowSize - 1] = NAK;
+                baseWindow++;
             }
             else {
                 break;

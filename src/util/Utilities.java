@@ -9,6 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.zip.CRC32;
 
 public  class Utilities {
@@ -22,7 +23,6 @@ public  class Utilities {
 
                 String line;
                 while ((line = br.readLine()) != null) {
-                    System.out.println(line);
                     toBeReturned += line;
                 }
             } catch (FileNotFoundException e) {
@@ -46,23 +46,6 @@ public  class Utilities {
 
         return buff.array();
     }
-//    public static long recieverChecksum(byte[] payload){
-//        ArrayList<Byte> lol = new ArrayList<Byte>();
-//        for (int i = 0; i < payload.length; i++) {
-//            if(payload[i] != 0) {
-//                lol.add(payload[i]);
-//            }
-//        }
-//        CRC32 check = new CRC32();
-//        byte [] arr = new byte[lol.size()];
-//        for (int i = 0; i < arr.length; i++) {
-//            arr[i] = lol.get(i);
-//        }
-//        check.update(arr);
-//
-//        long checkBytes =  check.getValue();
-//        return checkBytes;
-//    }
 
     public static int checksum(byte[] payload) {
        CRC32 check = new CRC32();
@@ -95,7 +78,7 @@ public  class Utilities {
 
     public static ByteBuffer packetToBuffer (Packet pac) {
 
-        ByteBuffer bs = ByteBuffer.allocate(529).order(ByteOrder.BIG_ENDIAN);
+        ByteBuffer bs = ByteBuffer.allocate(560).order(ByteOrder.BIG_ENDIAN);
 
         bs.put((byte) pac.getType());
         bs.put((byte) pac.getTr());
@@ -105,20 +88,25 @@ public  class Utilities {
         bs.putInt(pac.getTimestamp());
         bs.putInt(pac.getChecksum());
         bs.put(pac.getPayload());
-        System.out.println(bs.limit() + "********----------------------------------------------------");
         bs.flip();
 
         return bs;
     }
+    private static byte[] payLoadToByteArr(ByteBuffer r) {
+        byte[] arr = new byte[r.remaining()];
+        r.get(arr);
+        return arr;
+    }
 
     public static byte[][] payloadDivider(String payload) {
+        System.out.println(payload.length());
         int spotNeeded = (int) Math.ceil((double) payload.length()/512 );
         byte[][] payDiv = new byte[spotNeeded][];
 
         if(spotNeeded == 1) {
             payDiv[0] = payload.getBytes(StandardCharsets.UTF_8);
         } else {
-            String[] dividedPayload = equalStringSplit(payload, spotNeeded);
+            String[] dividedPayload = equalStringSplit(payload, 512);
             for (int i = 0; i < spotNeeded; i++) {
                 payDiv[i] = dividedPayload[i].getBytes(StandardCharsets.UTF_8);
             }
@@ -126,19 +114,24 @@ public  class Utilities {
         return payDiv;
     }
 
-    private static byte[] payLoadToByteArr(ByteBuffer r) {
-        byte[] arr = new byte[r.limit() - r.remaining()];
-        r.get(arr);
-        return arr;
-    }
 
-    private static String[] equalStringSplit(String payload, int subSize) {
-        int position = 0;
-        int offset = (payload.length() / subSize);
-        String [] subString = new String[subSize];
-        for (int i = 0; i < offset * subSize; i = i + offset) {
-            subString[position ++] = payload.substring(i, Math.min(i + offset, payload.length()));
+//    private static String[] equalStringSplit(String payload, int subSize) {
+//        int position = 0;
+//        int offset = (payload.length() / subSize);
+//        String [] subString = new String[subSize];
+//        for (int i = 0; i < offset * subSize; i = i + offset) {
+//            subString[position ++] = payload.substring(i, Math.min(i + offset, payload.length()));
+//        }
+//        return  subString;
+//    }
+    private static String[] equalStringSplit(String text, int size) {
+        List<String> parts = new ArrayList<>();
+
+        int length = text.length();
+        for (int i = 0; i < length; i += size) {
+            parts.add(text.substring(i, Math.min(length, i + size)));
         }
-        return  subString;
+        return parts.toArray(new String[0]);
     }
 }
+
