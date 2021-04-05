@@ -87,6 +87,7 @@ public class Receiver {
         byte[] concatenatedString = byteStream.toByteArray();
         String outPut = new String(concatenatedString, StandardCharsets.UTF_8);
         System.out.println("Packets That were send and Ack:+---------------------");
+        System.out.println("Packets That were send and Ack:+"+ "The Below is the output of the file.");
         System.out.println(outPut);
         System.out.println();
     }
